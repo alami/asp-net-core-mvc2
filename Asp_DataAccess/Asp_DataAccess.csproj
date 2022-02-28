@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Asp_Models\Asp_Models.csproj" />
+    <ProjectReference Include="..\Asp_Utility\Asp_Utility.csproj" />
   </ItemGroup>
 
 </Project>

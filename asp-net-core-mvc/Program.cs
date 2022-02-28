@@ -23,6 +23,8 @@ builder.Services.AddSession(Options =>
     Options.Cookie.IsEssential = true;
 });
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddControllersWithViews();
 
     builder.Services.AddEntityFrameworkNpgsql()

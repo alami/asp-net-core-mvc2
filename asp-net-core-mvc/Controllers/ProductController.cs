@@ -1,33 +1,34 @@
-﻿using Asp_DataAccess.Data;
-using Asp_Models;
+﻿using Asp_Models;
 using Asp_Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Asp_Utility;
+using Asp_DataAccess.Repository.IRepository;
 
 namespace asp_net_core_mvc.Controllers
 {
     [Authorize(Roles = WC.AdminRole)]
     public class ProductController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IProductRepository _prodRep;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public ProductController(ApplicationDbContext db, IWebHostEnvironment webHostEnvironment)
+        public ProductController(IProductRepository prodRep, IWebHostEnvironment webHostEnvironment)
         {
-            _db = db;
+            _prodRep = prodRep;
             _webHostEnvironment = webHostEnvironment;
         }
         public IActionResult Index()
         {
-            IEnumerable<Product> objList = _db.Product
-                                                .Include(u => u.Category)
-                                                .Include(u => u.ApplicationType);
+            IEnumerable<Product> objList = _prodRep.GetAll(
+                includeProperties: "Category,ApplicationType");
+                                                /*.Include(u => u.Category)
+                                                .Include(u => u.ApplicationType);*/
             /*foreach (Product obj in objList)
             {
-                obj.Category = _db.Category.FirstOrDefault(u=>u.Id==obj.CategoryId);
-                obj.ApplicationType = _db.ApplicationType.FirstOrDefault(u=>u.Id==obj.ApplicationTypeId);
+                obj.Category = _productRep.Category.FirstOrDefault(u=>u.Id==obj.CategoryId);
+                obj.ApplicationType = _productRep.ApplicationType.FirstOrDefault(u=>u.Id==obj.ApplicationTypeId);
             }*/
             return View(objList);
         }
@@ -38,14 +39,8 @@ namespace asp_net_core_mvc.Controllers
             ProductVM productVM = new ProductVM()
             {
                 Product = new Product(),
-                CategorySelectList = _db.Category.Select(i => new SelectListItem { 
-                    Text = i.Name, Value = i.Id.ToString() 
-                }),
-                ApplicationTypeSelectList = _db.ApplicationType.Select(i => new SelectListItem
-                {
-                    Text = i.Name,
-                    Value = i.Id.ToString()
-                })
+                CategorySelectList = _prodRep.GetAllDropdownList(WC.CategoryName),
+                ApplicationTypeSelectList = _prodRep.GetAllDropdownList(WC.ApplicationTypeName)
             };
             if (id == null)
             {
@@ -54,7 +49,7 @@ namespace asp_net_core_mvc.Controllers
             } else
             {
                 //Update
-                productVM.Product = _db.Product.Find(id); 
+                productVM.Product = _prodRep.Find(id.GetValueOrDefault()); 
                 if(productVM.Product == null) { return NotFound(); }
                 return View(productVM);
             }
@@ -85,12 +80,12 @@ namespace asp_net_core_mvc.Controllers
 
                     productVM.Product.Image = fileName + extension;
 
-                    _db.Product.Add(productVM.Product);
+                    _prodRep.Add(productVM.Product);
                 }
                 else
                 {
                     //Updating
-                    var objFromDb = _db.Product.AsNoTracking().FirstOrDefault(u=>u.Id==productVM.Product.Id);
+                    var objFromDb = _prodRep.FirstOrDefault(u=>u.Id==productVM.Product.Id, isTracking:false);
                     if (files.Count>0)
                     {
                         string upload = webRootPath + WC.ImagePath;
@@ -113,31 +108,23 @@ namespace asp_net_core_mvc.Controllers
                     {
                         productVM.Product.Image = objFromDb.Image;
                     }
-                    _db.Product.Update(productVM.Product);
+                    _prodRep.Update(productVM.Product);
                 }
-                _db.SaveChanges();
+                _prodRep.Save();
                 return RedirectToAction("Index");
             /*}
-            productVM.CategorySelectList = _db.Category.Select(i => new SelectListItem
-            {
-                Text = i.Name,
-                Value = i.Id.ToString()
-            });
-            productVM.ApplicationTypeSelectList = _db.ApplicationType.Select(i => new SelectListItem
-            {
-                Text = i.Name,
-                Value = i.Id.ToString()
-            });
+            productVM.CategorySelectList = _prodRepo.GetAllDropdownList(WC.CategoryName);
+            productVM.ApplicationTypeSelectList = _prodRepo.GetAllDropdownList(WC.ApplicationTypeName);
             return View(productVM);*/
         }
         //GET - Delete
         public IActionResult Delete(int? id)
         {
             if (id == null || id == 0) { return NotFound(); }
-            Product product = _db.Product
-                .Include(u=>u.Category)
-                .Include(u => u.ApplicationType)
-                .FirstOrDefault(u=>u.Id==id);
+            Product product = _prodRep
+                /*.Include(u=>u.Category)
+                .Include(u => u.ApplicationType)*/
+                .FirstOrDefault(u=>u.Id==id, includeProperties: "Category,ApplicationType");
             if (product == null) { return NotFound(); }
             return View(product);
         }
@@ -147,7 +134,7 @@ namespace asp_net_core_mvc.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int? id)
         {
-            var obj = _db.Product.Find(id);
+            var obj = _prodRep.Find(id.GetValueOrDefault());
             if (obj == null) { return NotFound(); }
 
             string upload = _webHostEnvironment.WebRootPath + WC.ImagePath;
@@ -157,8 +144,8 @@ namespace asp_net_core_mvc.Controllers
             {
                 System.IO.File.Delete(oldFile);
             }
-            _db.Product.Remove(obj);
-            _db.SaveChanges();
+            _prodRep.Remove(obj);
+            _prodRep.Save();
             return RedirectToAction("Index");
         }
     }

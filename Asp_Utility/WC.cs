@@ -11,5 +11,8 @@
         public const string Success = "Success";
         public const string Error = "Error";
 
+        public const string CategoryName = "Category";
+        public const string ApplicationTypeName = "ApplicationType";
+
     }
 }
