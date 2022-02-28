@@ -349,7 +349,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-Asp_DataAccess/Data/ApplicationDbContext.cs
-asp-net-core-mvc/wwwroot/fontawesome/
-asp-net-core-mvc/wwwroot/images/product/
-asp-net-core-mvc/appsettings.json
+Data/ApplicationDbContext.cs
+wwwroot/fontawesome/
+wwwroot/images/product/
+appsettings.json
