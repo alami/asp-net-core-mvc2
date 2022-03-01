@@ -7,25 +7,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using Asp_Utility;
+using Asp_DataAccess.Repository;
+using Asp_DataAccess.Repository.IRepository;
 
 namespace asp_net_core_mvc.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ApplicationDbContext _db;
+        private readonly IProductRepository _prodRepo;
+        private readonly ICategoryRepository _catRepo;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db)
+        public HomeController(ILogger<HomeController> logger, IProductRepository prodRepo, ICategoryRepository catRepo)
         {
             _logger = logger;
-            _db = db;
+            _prodRepo = prodRepo;
+            _catRepo = catRepo;
         }
 
         public IActionResult Index()
         {
             HomeVM homeVM = new HomeVM() {
-                Products = _db.Product.Include(u => u.Category).Include(u => u.ApplicationType),
-                Categories = _db.Category
+                Products = _prodRepo.GetAll(includeProperties: "Category,ApplicationType"),
+                Categories = _catRepo.GetAll()
             };
             return View(homeVM);
         }
@@ -41,8 +45,8 @@ namespace asp_net_core_mvc.Controllers
 
             DetailsVM DetailsVM = new DetailsVM()
             {
-                Product = _db.Product.Include(u => u.Category).Include(u => u.ApplicationType)
-                .Where(u => u.Id == id).FirstOrDefault(),
+                Product = _prodRepo.FirstOrDefault(u => u.Id == id,
+                                       includeProperties: "Category,ApplicationType"),
                 ExistsInCart = false
             };
 
