@@ -8,23 +8,32 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text;
 using Asp_Utility;
+using Asp_DataAccess.Repository.IRepository;
 
 namespace asp_net_core_mvc.Controllers
 {
     [Authorize]
     public class CartController : Controller
     {
-        private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IEmailSender _emailSender;
+        private readonly IProductRepository _prodRepo;
+        private readonly IApplicationUserRepository _userRepo;
+        private readonly IInquiryHeaderRepository _incHRepo;
+        private readonly IInquiryDetailRepository _incDRepo;
 
         [BindProperty]
         public ProductUserVM ProductUserVM { get; set; }
-        public CartController(ApplicationDbContext db, IWebHostEnvironment webHostEnvironment, IEmailSender emailSender)
+        public CartController(IWebHostEnvironment webHostEnvironment, IEmailSender emailSender,
+            IProductRepository prodRepo, IApplicationUserRepository userRepo,
+            IInquiryHeaderRepository incHRepo, IInquiryDetailRepository incDRepo)
         {
-            _db = db;
             _webHostEnvironment = webHostEnvironment;
             _emailSender = emailSender;
+            _prodRepo = prodRepo;
+            _userRepo = userRepo;
+            _incHRepo = incHRepo;
+            _incDRepo = incDRepo;
         }
         public IActionResult Index()
         {
@@ -35,7 +44,7 @@ namespace asp_net_core_mvc.Controllers
                 shoppingCartsList = HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart);
             }
             List<int> prodInCart = shoppingCartsList.Select(i => i.ProductId).ToList();
-            IEnumerable<Product> prodList = _db.Product.Where(u => prodInCart.Contains(u.Id));
+            IEnumerable<Product> prodList = _prodRepo.GetAll(u => prodInCart.Contains(u.Id));
             return View(prodList);
         }
 
@@ -77,11 +86,11 @@ namespace asp_net_core_mvc.Controllers
             }
 
             List<int> prodInCart = shoppingCartList.Select(i => i.ProductId).ToList();
-            IEnumerable<Product> prodList = _db.Product.Where(u => prodInCart.Contains(u.Id));
+            IEnumerable<Product> prodList = _prodRepo.GetAll(u => prodInCart.Contains(u.Id));
 
             ProductUserVM = new ProductUserVM()
             {
-                ApplicationUser = _db.ApplicationUser.FirstOrDefault(u => u.Id == claim.Value),
+                ApplicationUser = _userRepo.FirstOrDefault(u => u.Id == claim.Value),
                 ProductList = prodList.ToList()
             };
 
