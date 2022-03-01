@@ -17,7 +17,7 @@ namespace Asp_Models
         [ForeignKey("ApplicationUserId")]
         public ApplicationUser ApplicationUser { get; set; }
 
-        public DateTime InquiryDate { get; set; }
+        public DateTimeOffset InquiryDate { get; set; }
 
         [Required]
         public string PhoneNumber { get; set; }

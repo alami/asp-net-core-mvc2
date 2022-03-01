@@ -19,21 +19,21 @@ namespace asp_net_core_mvc.Controllers
         private readonly IEmailSender _emailSender;
         private readonly IProductRepository _prodRepo;
         private readonly IApplicationUserRepository _userRepo;
-        private readonly IInquiryHeaderRepository _incHRepo;
-        private readonly IInquiryDetailRepository _incDRepo;
+        private readonly IInquiryHeaderRepository _inqHRepo;
+        private readonly IInquiryDetailRepository _inqDRepo;
 
         [BindProperty]
         public ProductUserVM ProductUserVM { get; set; }
         public CartController(IWebHostEnvironment webHostEnvironment, IEmailSender emailSender,
             IProductRepository prodRepo, IApplicationUserRepository userRepo,
-            IInquiryHeaderRepository incHRepo, IInquiryDetailRepository incDRepo)
+            IInquiryHeaderRepository inqHRepo, IInquiryDetailRepository inqDRepo)
         {
             _webHostEnvironment = webHostEnvironment;
             _emailSender = emailSender;
             _prodRepo = prodRepo;
             _userRepo = userRepo;
-            _incHRepo = incHRepo;
-            _incDRepo = incDRepo;
+            _inqHRepo = inqHRepo;
+            _inqDRepo = inqDRepo;
         }
         public IActionResult Index()
         {
@@ -102,6 +102,8 @@ namespace asp_net_core_mvc.Controllers
         [ActionName("Summary")]
         public async Task<IActionResult> SummaryPost(ProductUserVM ProductUserVM)
         {
+            var claimsIdentity = (ClaimsIdentity)User.Identity; 
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
             var PathToTemplate = _webHostEnvironment.WebRootPath + Path.DirectorySeparatorChar.ToString()
                 + "templates" + Path.DirectorySeparatorChar.ToString() +
@@ -132,6 +134,33 @@ namespace asp_net_core_mvc.Controllers
 
 
             await _emailSender.SendEmailAsync(WC.EmailAdmin, subject, messageBody);
+
+            InquiryHeader inquiryHeader = new InquiryHeader()
+            {
+                ApplicationUserId = claim.Value,
+                FullName = ProductUserVM.ApplicationUser.FullName,
+                Email = ProductUserVM.ApplicationUser.Email,
+                PhoneNumber = ProductUserVM.ApplicationUser.PhoneNumber,
+                InquiryDate = DateTimeOffset.UtcNow
+
+            };
+
+            _inqHRepo.Add(inquiryHeader);
+            _inqHRepo.Save();
+
+            foreach (var prod in ProductUserVM.ProductList)
+            {
+                InquiryDetail inquiryDetail = new InquiryDetail()
+                {
+                    InquiryHeaderId = inquiryHeader.Id,
+                    ProductId = prod.Id,
+
+                };
+                _inqDRepo.Add(inquiryDetail);
+
+            }
+            _inqDRepo.Save();
+            TempData[WC.Success] = "Inquiry submitted successfully";        
 
             return RedirectToAction(nameof(InquiryConfirmation));
         }

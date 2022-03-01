@@ -36,7 +36,7 @@ namespace Asp_DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ApplicationType");
+                    b.ToTable("ApplicationType", (string)null);
                 });
 
             modelBuilder.Entity("Asp_Models.Category", b =>
@@ -56,7 +56,7 @@ namespace Asp_DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Category");
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("Asp_Models.InquiryDetail", b =>
@@ -79,7 +79,7 @@ namespace Asp_DataAccess.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("InquiryDetail");
+                    b.ToTable("InquiryDetail", (string)null);
                 });
 
             modelBuilder.Entity("Asp_Models.InquiryHeader", b =>
@@ -113,7 +113,7 @@ namespace Asp_DataAccess.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("InquiryHeader");
+                    b.ToTable("InquiryHeader", (string)null);
                 });
 
             modelBuilder.Entity("Asp_Models.Product", b =>
@@ -155,7 +155,7 @@ namespace Asp_DataAccess.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
