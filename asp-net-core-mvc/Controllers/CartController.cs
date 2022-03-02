@@ -37,14 +37,22 @@ namespace asp_net_core_mvc.Controllers
         }
         public IActionResult Index()
         {
-            List<ShoppingCart> shoppingCartsList = new List<ShoppingCart>();
+            List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
             if (HttpContext.Session.Get<IEnumerable<ShoppingCart>>(WC.SessionCart) != null
                 && HttpContext.Session.Get<IEnumerable<ShoppingCart>>(WC.SessionCart).Count() > 0)
             {
-                shoppingCartsList = HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart);
+                shoppingCartList = HttpContext.Session.Get<List<ShoppingCart>>(WC.SessionCart);
             }
-            List<int> prodInCart = shoppingCartsList.Select(i => i.ProductId).ToList();
-            IEnumerable<Product> prodList = _prodRepo.GetAll(u => prodInCart.Contains(u.Id));
+            List<int> prodInCart = shoppingCartList.Select(i => i.ProductId).ToList();
+            IEnumerable<Product> prodListTemp = _prodRepo.GetAll(u => prodInCart.Contains(u.Id));
+            IList<Product> prodList = new List<Product>();
+
+            foreach (var cartObj in shoppingCartList)
+            {
+                Product prodTemp = prodListTemp.FirstOrDefault(u => u.Id == cartObj.ProductId);
+                prodTemp.TempSqFt = cartObj.SqFt;
+                prodList.Add(prodTemp);
+            }
             return View(prodList);
         }
 
