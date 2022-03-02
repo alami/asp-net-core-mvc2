@@ -73,7 +73,7 @@ namespace asp_net_core_mvc.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Index")]
-        public IActionResult IndexPost()
+        public IActionResult IndexPost(IEnumerable<Product> ProdList)
         {
             List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
             foreach (Product prod in ProdList)
