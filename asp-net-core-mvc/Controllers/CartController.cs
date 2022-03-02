@@ -75,7 +75,13 @@ namespace asp_net_core_mvc.Controllers
         [ActionName("Index")]
         public IActionResult IndexPost()
         {
+            List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
+            foreach (Product prod in ProdList)
+            {
+                shoppingCartList.Add(new ShoppingCart { ProductId = prod.Id, SqFt = prod.TempSqFt });
+            }
 
+            HttpContext.Session.Set(WC.SessionCart, shoppingCartList);
             return RedirectToAction(nameof(Summary));
         }
         
