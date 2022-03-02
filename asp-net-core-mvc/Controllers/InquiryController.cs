@@ -2,10 +2,12 @@
 using Asp_Models;
 using Asp_Models.ViewModels;
 using Asp_Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace asp_net_core_mvc.Controllers
 {
+    [Authorize(Roles = WC.AdminRole)]
     public class InquiryController : Controller
     {
         private readonly IInquiryHeaderRepository _inqHRepo;
@@ -51,6 +53,19 @@ namespace asp_net_core_mvc.Controllers
             HttpContext.Session.Set(WC.SessionCart, shoppingCartList);
             HttpContext.Session.Set(WC.SessionInquiryId, InquiryVM.InquiryHeader.Id);
             return RedirectToAction("Index", "Cart");
+        }
+
+        [HttpPost]
+        public IActionResult Delete()
+        {
+            InquiryHeader inquiryHeader = _inqHRepo.FirstOrDefault(u => u.Id == InquiryVM.InquiryHeader.Id);
+            IEnumerable<InquiryDetail> inquiryDetails = _inqDRepo.GetAll(u => u.InquiryHeaderId == InquiryVM.InquiryHeader.Id);
+
+            _inqDRepo.RemoveRange(inquiryDetails);
+            _inqHRepo.Remove(inquiryHeader);
+            _inqHRepo.Save();
+            TempData[WC.Success] = "Action completed successfully";
+            return RedirectToAction(nameof(Index));
         }
 
         #region API CALLS
