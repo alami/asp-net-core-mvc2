@@ -17,5 +17,13 @@ namespace asp_net_core_mvc.Controllers
         {
             return View();
         }
+        #region API CALLS
+        [HttpGet]
+        public IActionResult GetInquiryList()
+        {
+            return Json(new { data = _inqHRepo.GetAll() });
+        }
+
+        #endregion
     }
 }
