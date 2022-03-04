@@ -2,8 +2,12 @@ using Asp_DataAccess.Data;
 using Asp_DataAccess.Repository;
 using Asp_DataAccess.Repository.IRepository;
 using Asp_Utility;
+using Asp_Utility.BrainTree;
+using Braintree;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+//using System.Configuration;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +18,7 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<IBraintreeGateway, BraintreeGateway>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(Options =>
@@ -22,6 +27,10 @@ builder.Services.AddSession(Options =>
     Options.Cookie.HttpOnly = true;
     Options.Cookie.IsEssential = true;
 });
+
+builder.Services.Configure<BrainTreeSettings>(builder.Configuration.GetSection("BrainTree"));
+builder.Services.AddSingleton<IBrainTreeGate, BrainTreeGate>();
+
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();

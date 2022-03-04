@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using Asp_Utility;
 using Asp_DataAccess.Repository.IRepository;
+using Asp_Utility.BrainTree;
 
 namespace asp_net_core_mvc.Controllers
 {
@@ -23,12 +24,14 @@ namespace asp_net_core_mvc.Controllers
         private readonly IInquiryDetailRepository _inqDRepo;
         private readonly IOrderHeaderRepository _orderHRepo;
         private readonly IOrderDetailRepository _orderDRepo;
+        private readonly IBrainTreeGate _brain;
+
         [BindProperty]
         public ProductUserVM ProductUserVM { get; set; }
         public CartController(IWebHostEnvironment webHostEnvironment, IEmailSender emailSender,
             IProductRepository prodRepo, IApplicationUserRepository userRepo,
             IInquiryHeaderRepository inqHRepo, IInquiryDetailRepository inqDRepo,
-            IOrderHeaderRepository orderHRepo, IOrderDetailRepository orderDRepo)
+            IOrderHeaderRepository orderHRepo, IOrderDetailRepository orderDRepo, IBrainTreeGate brain)
         {
             _webHostEnvironment = webHostEnvironment;
             _emailSender = emailSender;
@@ -38,6 +41,7 @@ namespace asp_net_core_mvc.Controllers
             _inqDRepo = inqDRepo;
             _orderDRepo = orderDRepo;
             _orderHRepo = orderHRepo;
+            _brain = brain;
         }
         public IActionResult Index()
         {
@@ -109,6 +113,10 @@ namespace asp_net_core_mvc.Controllers
                 {
                     applicationUser = new ApplicationUser();
                 }
+                var gateway = _brain.GetGateway();
+                var clientToken = gateway.ClientToken.Generate();
+                ViewBag.ClientToken = clientToken;
+
             }
             else
             {
