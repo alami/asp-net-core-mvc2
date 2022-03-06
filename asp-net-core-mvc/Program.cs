@@ -18,7 +18,6 @@ builder.Services.AddIdentity<IdentityUser,IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
-builder.Services.AddTransient<IBraintreeGateway, BraintreeGateway>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(Options =>
